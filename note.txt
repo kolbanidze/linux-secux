@@ -1,0 +1,3 @@
+COMPRESSZST=(zstd -c -T0 --ultra -20 -)
+ccache
+MAKEFLAGS="-j$(nproc)"
