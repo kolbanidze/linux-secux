@@ -28,8 +28,8 @@ sed -i '/local pid_docs=$!/d' $REPO_DIR/PKGBUILD
 sed -i '/wait "${pid_docs}"/d' $REPO_DIR/PKGBUILD
 
 # При сборке make olddefconfig отдаст приоритет последним строкам.
-cat $REPO_DIR/config $CONFIG_FRAGMENT > $REPO_DIR/config.tmp
-mv $REPO_DIR/config.tmp $REPO_DIR/config
+cat $REPO_DIR/config.x86_64 $CONFIG_FRAGMENT > $REPO_DIR/config.x86_64.tmp
+mv $REPO_DIR/config.x86_64.tmp $REPO_DIR/config.x86_64
 
 # Финальная подготовка
 cd $REPO_DIR
