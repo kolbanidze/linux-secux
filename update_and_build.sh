@@ -28,6 +28,8 @@ sed -i '/"\$pkgbase-docs"/d' PKGBUILD
 sed -i '/graphviz/d; /imagemagick/d; /python-sphinx/d; /texlive-latexextra/d' PKGBUILD
 sed -i '/local pid_docs=$!/d' PKGBUILD
 sed -i '/wait "${pid_docs}"/d' PKGBUILD
+sed -i 's/tools\/bpf\/bpftool\/vmlinux.h//g' PKGBUILD
+sed -i '/tools\/bpf\/bpftool/d' PKGBUILD
 
 # Инъекция LLVM и KCFLAGS во все вызовы make внутри PKGBUILD
 # Ищет точное слово make (в начале строки или после пробела) и добавляет аргументы
@@ -56,6 +58,6 @@ echo "> Настройка окружения и запуск сборки..."
 export MAKEFLAGS="-j$(nproc)"
 export COMPRESSZST=(zstd -c -T0 --ultra -20 -)
 
-makepkg -s -e --noconfirm
+makepkg -s --noconfirm
 
 echo "> Готово! Пакеты ядра $MY_PKGBASE успешно собраны через LLVM."
