@@ -15,7 +15,8 @@ def check_packages():
     if len(files) != 4:
         print("Something went wrong during build process.")
         return
-    run(['rsync', '-a', f'{BASE_DIR}/linux-secux*', '/home/server/incoming/'], check=True, capture_output=False)
+    pkg_files = list(workdir.glob('linux-secux*'))
+    run(['rsync', '-a'] + pkg_files + ['/home/server/incoming/'], check=True, capture_output=False)
 
 def begin_build():
     # os.chdir(BASE_DIR)
@@ -37,6 +38,9 @@ def main():
             else:
                 file.seek(0)
                 file.write(tag_name)
+    else:
+        with open(f"{BASE_DIR}/{LAST_TAG_VERSION}", "w") as file:
+            file.write(tag_name)
     
     begin_build()
     check_packages()
