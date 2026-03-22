@@ -1,0 +1,50 @@
+--- original_ima_policy.c	2026-03-22 20:32:46.245888293 +0300
++++ ima_policy.c	2026-03-22 20:33:25.551378541 +0300
+@@ -64,7 +64,7 @@ enum lsm_rule_types { LSM_OBJ_USER, LSM_
+ 	LSM_SUBJ_USER, LSM_SUBJ_ROLE, LSM_SUBJ_TYPE
+ };
+ 
+-enum policy_types { ORIGINAL_TCB = 1, DEFAULT_TCB };
++enum policy_types { ORIGINAL_TCB = 1, DEFAULT_TCB, SECUXLINUX_TCB };
+ 
+ enum policy_rule_list { IMA_DEFAULT_POLICY = 1, IMA_CUSTOM_POLICY };
+ 
+@@ -194,6 +194,17 @@ static struct ima_rule_entry default_mea
+ 	{.action = MEASURE, .func = POLICY_CHECK, .flags = IMA_FUNC},
+ };
+ 
++static struct ima_rule_entry secuxlinux_measurement_rules[] __ro_after_init = {
++	{.action = MEASURE, .func = MMAP_CHECK, .mask = MAY_EXEC,
++	 .flags = IMA_FUNC | IMA_MASK},
++	{.action = MEASURE, .func = BPRM_CHECK, .mask = MAY_EXEC,
++	 .flags = IMA_FUNC | IMA_MASK},
++	/* Правила чтения от root убраны во избежание TPM DoS при обновлениях */
++	{.action = MEASURE, .func = MODULE_CHECK, .flags = IMA_FUNC},
++	{.action = MEASURE, .func = FIRMWARE_CHECK, .flags = IMA_FUNC},
++	{.action = MEASURE, .func = POLICY_CHECK, .flags = IMA_FUNC},
++};
++
+ static struct ima_rule_entry default_appraise_rules[] __ro_after_init = {
+ 	{.action = DONT_APPRAISE, .fsmagic = PROC_SUPER_MAGIC, .flags = IMA_FSMAGIC},
+ 	{.action = DONT_APPRAISE, .fsmagic = SYSFS_MAGIC, .flags = IMA_FSMAGIC},
+@@ -291,6 +302,8 @@ static int __init policy_setup(char *str
+ 			continue;
+ 		if ((strcmp(p, "tcb") == 0) && !ima_policy)
+ 			ima_policy = DEFAULT_TCB;
++		else if ((strcmp(p, "secuxlinux") == 0) && !ima_policy)
++			ima_policy = SECUXLINUX_TCB;
+ 		else if (strcmp(p, "appraise_tcb") == 0)
+ 			ima_use_appraise_tcb = true;
+ 		else if (strcmp(p, "secure_boot") == 0)
+@@ -972,6 +985,11 @@ void __init ima_init_policy(void)
+ 			  ARRAY_SIZE(default_measurement_rules),
+ 			  IMA_DEFAULT_POLICY);
+ 		break;
++	case SECUXLINUX_TCB:
++		add_rules(secuxlinux_measurement_rules,
++				ARRAY_SIZE(secuxlinux_measurement_rules),
++				IMA_DEFAULT_POLICY);
++			break;
+ 	default:
+ 		break;
+ 	}

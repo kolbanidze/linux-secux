@@ -22,7 +22,7 @@ cd "$REPO_DIR"
 
 sed -i "s/^pkgbase=.*/pkgbase=${MY_PKGBASE}/" PKGBUILD
 sed -i 's/${pkgbase}-${_srctag}.patch/linux-hardened-${_srctag}.patch/' PKGBUILD
-
+sed -i 's/export KBUILD_BUILD_HOST=archlinux/export KBUILD_BUILD_HOST=secuxlinux/' PKGBUILD
 sed -i '/make htmldocs/d' PKGBUILD
 sed -i '/"\$pkgbase-docs"/d' PKGBUILD
 sed -i '/graphviz/d; /imagemagick/d; /python-sphinx/d; /texlive-latexextra/d' PKGBUILD
@@ -30,6 +30,10 @@ sed -i '/local pid_docs=$!/d' PKGBUILD
 sed -i '/wait "${pid_docs}"/d' PKGBUILD
 sed -i 's/tools\/bpf\/bpftool\/vmlinux.h//g' PKGBUILD
 sed -i '/tools\/bpf\/bpftool/d' PKGBUILD
+
+echo "> Внедряем патч IMA политики в PKGBUILD..."
+cp ../secuxlinux_ima.patch .
+sed -i "/^source=(/a \  'secuxlinux_ima.patch'" PKGBUILD
 
 # Инъекция LLVM и KCFLAGS во все вызовы make внутри PKGBUILD
 # Ищет точное слово make (в начале строки или после пробела) и добавляет аргументы
