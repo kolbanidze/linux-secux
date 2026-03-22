@@ -1,5 +1,5 @@
---- original_ima_policy.c	2026-03-22 20:32:46.245888293 +0300
-+++ ima_policy.c	2026-03-22 20:33:25.551378541 +0300
+--- a/security/integrity/ima/ima_policy.c
++++ b/security/integrity/ima/ima_policy.c
 @@ -64,7 +64,7 @@ enum lsm_rule_types { LSM_OBJ_USER, LSM_
  	LSM_SUBJ_USER, LSM_SUBJ_ROLE, LSM_SUBJ_TYPE
  };
