@@ -14,7 +14,7 @@ INCOMING_DIR = Path("/home/server/incoming")
 
 def check_packages():
     workdir = BASE_DIR / "linux-hardened"
-    pkg_files = list(workdir.glob('linux-secux-*.pkg.tar.zst'))
+    pkg_files = list(workdir.glob('linux-secux-*'))
     
     if not pkg_files:
         logging.error("Build failed: No package files found.")
