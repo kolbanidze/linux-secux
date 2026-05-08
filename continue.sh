@@ -1,2 +1,2 @@
-cd linux-hardened
+cd linux-lts
 makepkg -s -e --noconfirm

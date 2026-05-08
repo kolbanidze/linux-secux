@@ -13,7 +13,7 @@ LAST_TAG_VERSION = BASE_DIR / "last-tag-version.txt"
 INCOMING_DIR = Path("/home/server/incoming")
 
 def check_packages():
-    workdir = BASE_DIR / "linux-hardened"
+    workdir = BASE_DIR / "linux-lts"
     pkg_files = list(workdir.glob('linux-secux-*'))
     
     if not pkg_files:
@@ -29,11 +29,11 @@ def check_packages():
         logging.error(f"Rsync failed: {e}")
         sys.exit(1)
 
-def begin_build():
+def begin_build(tag_name):
     build_script = BASE_DIR / "update_and_build.sh"
     logging.info("Starting update_and_build.sh...")
     try:
-        subprocess.run(['bash', str(build_script)], check=True)
+        subprocess.run(['bash', str(build_script), tag_name], check=True)
         logging.info("Build finished successfully.")
     except subprocess.CalledProcessError as e:
         logging.error(f"Build script failed with exit code {e.returncode}")
@@ -41,24 +41,45 @@ def begin_build():
 
 def main():
     try:
-        resp = get("https://api.github.com/repos/anthraxx/linux-hardened/releases/latest", timeout=10)
-        resp.raise_for_status()
-        tag_name = resp.json()['tag_name']
+        arch_resp = get("https://archlinux.org/packages/core/x86_64/linux-lts/json/", timeout=10)
+        arch_resp.raise_for_status()
+        arch_data = arch_resp.json()
+        arch_pkgver = arch_data['pkgver'] # Например: "6.18.25"
+        arch_pkgrel = arch_data['pkgrel']
+
+        # Проверяем, есть ли Hardened-патч для этой точной версии
+        gh_resp = get("https://api.github.com/repos/anthraxx/linux-hardened/releases", timeout=10)
+        gh_resp.raise_for_status()
+        
+        target_tag = None
+        for r in gh_resp.json():
+            # Ищем релиз формата v6.18.25-hardened*
+            if r['tag_name'].startswith(f"v{arch_pkgver}-hardened"):
+                target_tag = r['tag_name']
+                break
+                
+        if not target_tag:
+            logging.info(f"Hardened-патч для текущей LTS версии ({arch_pkgver}) еще не готов. Ожидаем.")
+            return
+
     except Exception as e:
-        logging.error(f"Failed to fetch GitHub release: {e}")
+        logging.error(f"Ошибка при проверке версий: {e}")
         sys.exit(1)
 
+    # Формируем уникальный идентификатор сборки (LTS версия + версия патча)
+    current_build = f"{arch_pkgver}-{arch_pkgrel}-{target_tag}"
+    
     if LAST_TAG_VERSION.exists():
-        previous_version = LAST_TAG_VERSION.read_text().strip()
-        if previous_version == tag_name:
-            logging.info(f"Version {tag_name} already built. Exiting.")
+        previous_build = LAST_TAG_VERSION.read_text().strip()
+        if previous_build == current_build:
+            logging.info(f"Связка {current_build} уже собрана. Выход.")
             return
     
-    logging.info(f"New version detected: {tag_name}. Starting build...")
+    logging.info(f"Найдено совпадение версий: LTS {arch_pkgver} и патч {target_tag}. Начинаем сборку...")
     
-    LAST_TAG_VERSION.write_text(tag_name)
+    LAST_TAG_VERSION.write_text(current_build)
     
-    begin_build()
+    begin_build(target_tag)
     check_packages()
 
 if __name__ == "__main__":

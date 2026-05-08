@@ -3,4 +3,4 @@ set -e
 
 echo "> Добавляем ключи Линуса Торвальдса и мейнтейнеров"
 
-gpg --import linux-hardened/keys/pgp/*.asc
+gpg --import linux-lts/keys/pgp/*.asc
