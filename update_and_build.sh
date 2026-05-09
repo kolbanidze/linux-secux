@@ -47,6 +47,7 @@ sed -i '/local pid_docs=$!/d' PKGBUILD
 sed -i '/wait "${pid_docs}"/d' PKGBUILD
 sed -i 's/tools\/bpf\/bpftool\/vmlinux.h//g' PKGBUILD
 sed -i '/tools\/bpf\/bpftool/d' PKGBUILD
+sed -i '/tools\/bpf\/resolve_btfids\/resolve_btfids/d' PKGBUILD
 
 # Инъекция LLVM и KCFLAGS во все вызовы make внутри PKGBUILD
 # Ищет точное слово make (в начале строки или после пробела) и добавляет аргументы
