@@ -26,10 +26,14 @@ else
     cd ..
 fi
 
-echo "> Применяем модификации PKGBUILD..."
+echo "> Скачиваем Hardened-патч локально..."
 cd "$REPO_DIR"
+curl -L -o "$HARDENED_PATCH" "$HARDENED_URL"
 
-sed -i "s/^pkgbase=.*/pkgbase=${MY_PKGBASE}/" PKGBUILD
+echo "> Вырезаем изменения Makefile во избежание конфликтов SUBLEVEL..."
+# patchutils is needed
+filterdiff -x 'a/Makefile' -x 'b/Makefile' "$HARDENED_PATCH" > "${HARDENED_PATCH}.clean"
+mv "${HARDENED_PATCH}.clean" "$HARDENED_PATCH"
 
 echo "> Внедряем Hardened-патч и IMA политику в PKGBUILD..."
 cp ../secuxlinux_ima.patch .
@@ -37,7 +41,7 @@ cp ../secuxlinux_ima.patch .
 # Удаляем конфликтующий ZEN-патч из исходников Arch LTS
 sed -i '/0001-ZEN-Add-sysctl-and-CONFIG-to-disallow-unprivileged-C.patch/d' PKGBUILD
 
-sed -i "/^source=(/a \  'secuxlinux_ima.patch'\n  '${HARDENED_URL}'" PKGBUILD
+sed -i "/^source=(/a \  'secuxlinux_ima.patch'\n  '${HARDENED_PATCH}'" PKGBUILD
 
 sed -i 's/export KBUILD_BUILD_HOST=archlinux/export KBUILD_BUILD_HOST=secuxlinux/' PKGBUILD
 sed -i '/make htmldocs/d' PKGBUILD

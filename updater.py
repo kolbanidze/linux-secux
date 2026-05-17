@@ -47,17 +47,20 @@ def main():
         arch_pkgver = arch_data['pkgver'] # Например: "6.18.25"
         arch_pkgrel = arch_data['pkgrel']
 
-        # Проверяем, есть ли Hardened-патч для этой точной версии
+        # Формируем базовую версию  "6.18" из "6.18.25"
+        arch_version_parts = arch_pkgver.split('.')
+        major_minor = f"{arch_version_parts[0]}.{arch_version_parts[1]}"
+
         gh_resp = get("https://api.github.com/repos/anthraxx/linux-hardened/releases", timeout=10)
         gh_resp.raise_for_status()
         
         target_tag = None
         for r in gh_resp.json():
-            # Ищем релиз формата v6.18.25-hardened*
-            if r['tag_name'].startswith(f"v{arch_pkgver}-hardened"):
+            # Ищем последний доступный релиз для текущей ветки (например, v6.18.*-hardened)
+            if r['tag_name'].startswith(f"v{major_minor}."):
                 target_tag = r['tag_name']
                 break
-                
+
         if not target_tag:
             logging.info(f"Hardened-патч для текущей LTS версии ({arch_pkgver}) еще не готов. Ожидаем.")
             return
