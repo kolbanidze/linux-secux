@@ -38,6 +38,8 @@ mv "${HARDENED_PATCH}.clean" "$HARDENED_PATCH"
 echo "> Внедряем Hardened-патч и IMA политику в PKGBUILD..."
 cp ../secuxlinux_ima.patch .
 
+sed -i "s/^pkgbase=linux-lts/pkgbase=${MY_PKGBASE}/" PKGBUILD
+
 # Удаляем конфликтующий ZEN-патч из исходников Arch LTS
 sed -i '/0001-ZEN-Add-sysctl-and-CONFIG-to-disallow-unprivileged-C.patch/d' PKGBUILD
 
