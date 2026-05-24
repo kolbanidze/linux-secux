@@ -41,11 +41,24 @@ def begin_build(tag_name):
 
 def main():
     try:
-        arch_resp = get("https://archlinux.org/packages/core/x86_64/linux-lts/json/", timeout=10)
-        arch_resp.raise_for_status()
-        arch_data = arch_resp.json()
-        arch_pkgver = arch_data['pkgver'] # Например: "6.18.25"
-        arch_pkgrel = arch_data['pkgrel']
+        gitlab_url = "https://gitlab.archlinux.org/archlinux/packaging/packages/linux-lts/-/raw/main/PKGBUILD"
+        pkgbuild_resp = get(gitlab_url, timeout=10)
+        pkgbuild_resp.raise_for_status()
+        
+        arch_pkgver = None
+        arch_pkgrel = None
+        
+        for line in pkgbuild_resp.text.splitlines():
+            if line.startswith("pkgver="):
+                arch_pkgver = line.split("=")[1].strip().strip("'\"")
+            elif line.startswith("pkgrel="):
+                arch_pkgrel = line.split("=")[1].strip().strip("'\"")
+                
+        if not arch_pkgver or not arch_pkgrel:
+            logging.error("Не удалось спарсить pkgver и pkgrel из PKGBUILD")
+            sys.exit(1)
+            
+        logging.info(f"Обнаружена версия в GitLab: {arch_pkgver}-{arch_pkgrel}")
 
         # Формируем базовую версию  "6.18" из "6.18.25"
         arch_version_parts = arch_pkgver.split('.')
