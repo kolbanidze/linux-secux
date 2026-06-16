@@ -45,13 +45,15 @@ fi
 echo "> Накладываем патчи..."
 
 if ! patch -p1 --dry-run --fuzz=0 < "../$HARDENED_PATCH" >/dev/null 2>&1; then
-    echo "[!] КРИТИЧЕСКАЯ ОШИБКА: Патч $HARDENED_PATCH не ложится."
+    echo "[!] Oopsie: Патч $HARDENED_PATCH не ложится."
     exit 1
 fi
 patch -p1 --fuzz=0 < "../$HARDENED_PATCH" >/dev/null
 
+sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -secux/' Makefile
+
 if ! patch -p1 --dry-run --fuzz=0 < "../secuxlinux_ima.patch" >/dev/null 2>&1; then
-    echo "[!] КРИТИЧЕСКАЯ ОШИБКА: secuxlinux_ima.patch не ложится."
+    echo "[!] Oopsie: secuxlinux_ima.patch не ложится."
     exit 1
 fi
 patch -p1 --fuzz=0 < "../secuxlinux_ima.patch" >/dev/null
@@ -59,7 +61,7 @@ patch -p1 --fuzz=0 < "../secuxlinux_ima.patch" >/dev/null
 for patch_file in "../0001-amdgpu.patch" "../0002-amdgpu.patch"; do
     if [ -f "$patch_file" ]; then
         if ! patch -p1 --dry-run --fuzz=0 < "$patch_file" >/dev/null 2>&1; then
-            echo "[!] КРИТИЧЕСКАЯ ОШИБКА: Патч $(basename "$patch_file") не ложится."
+            echo "[!] Oopsie: Патч $(basename "$patch_file") не ложится."
             exit 1
         fi
         patch -p1 --fuzz=0 < "$patch_file" >/dev/null
