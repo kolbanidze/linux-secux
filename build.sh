@@ -85,9 +85,25 @@ sed -i 's/CONFIG_LOCALVERSION_AUTO=y/CONFIG_LOCALVERSION_AUTO=n/' .config
 
 make LLVM=1 LLVM_IAS=1 CC="ccache clang" olddefconfig >/dev/null
 
-sed -i 's/The ${pkgdesc} kernel/Secux Linux hardened kernel/g' scripts/package/PKGBUILD
-sed -i 's/for the ${pkgdesc} kernel/for the Secux Linux hardened kernel/g' scripts/package/PKGBUILD
+echo "> Настраиваем зависимости PKGBUILD..."
+cat << 'EOF' >> scripts/package/PKGBUILD
 
+# Перехватываем динамически созданные функции пакета с помощью declare -f
+_orig_pkg=$(declare -f "package_${pkgbase}")
+eval "${_orig_pkg%\}}" '
+    pkgdesc="Secux Linux hardened kernel and modules"
+    depends+=(coreutils initramfs kmod mkinitcpio)
+    provides+=(KSMBD-MODULE VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE)
+    optdepends+=("wireless-regdb: to set the correct wireless channels" "linux-firmware: firmware images needed for some devices")
+}'
+
+_orig_hdrs=$(declare -f "package_${pkgbase}-headers")
+eval "${_orig_hdrs%\}}" '
+    pkgdesc="Headers and scripts for building modules for the Secux Linux hardened kernel"
+    depends+=(pahole)
+    provides+=(LINUX-HEADERS)
+}'
+EOF
 export MAKEFLAGS="-j$(nproc)"
 export PACMAN_PKGBASE="linux-secux"
 export PACMAN_EXTRAPACKAGES="headers"
