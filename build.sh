@@ -33,6 +33,7 @@ else
     echo "> Подготовка дерева исходников..."
     git reset --hard HEAD >/dev/null
     git clean -fd >/dev/null
+    rm -f .version # comment me if you want to increase pkgrel
     
     CURRENT_TAG=$(git describe --tags --exact-match 2>/dev/null || true)
     if [ "$CURRENT_TAG" != "v${KERNEL_VER}" ]; then
