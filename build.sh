@@ -44,27 +44,30 @@ fi
 
 echo "> Накладываем патчи..."
 
-if ! patch -p1 --dry-run --fuzz=0 < "../$HARDENED_PATCH" >/dev/null 2>&1; then
+if ! git apply --check --exclude="Makefile" "../$HARDENED_PATCH" >/dev/null 2>&1; then
     echo "[!] Oopsie: Патч $HARDENED_PATCH не ложится."
+    git apply --check --exclude="Makefile" "../$HARDENED_PATCH"
     exit 1
 fi
-patch -p1 --fuzz=0 < "../$HARDENED_PATCH" >/dev/null
+git apply --exclude="Makefile" "../$HARDENED_PATCH"
 
 sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -secux/' Makefile
 
-if ! patch -p1 --dry-run --fuzz=0 < "../secuxlinux_ima.patch" >/dev/null 2>&1; then
+if ! git apply --check "../secuxlinux_ima.patch" >/dev/null 2>&1; then
     echo "[!] Oopsie: secuxlinux_ima.patch не ложится."
+    git apply --check "../secuxlinux_ima.patch"
     exit 1
 fi
-patch -p1 --fuzz=0 < "../secuxlinux_ima.patch" >/dev/null
+git apply "../secuxlinux_ima.patch"
 
 for patch_file in "../0001-amdgpu.patch" "../0002-amdgpu.patch"; do
     if [ -f "$patch_file" ]; then
-        if ! patch -p1 --dry-run --fuzz=0 < "$patch_file" >/dev/null 2>&1; then
+        if ! git apply --check "$patch_file" >/dev/null 2>&1; then
             echo "[!] Oopsie: Патч $(basename "$patch_file") не ложится."
+            git apply --check "$patch_file"
             exit 1
         fi
-        patch -p1 --fuzz=0 < "$patch_file" >/dev/null
+        git apply "$patch_file"
         echo "  [OK] $(basename "$patch_file") применен."
     fi
 done
