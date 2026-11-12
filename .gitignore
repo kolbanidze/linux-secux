@@ -3,4 +3,5 @@ last-tag-version.txt
 arch-base-config
 linux-hardened*.patch
 *.sig
+.hardened-gnupg/
 *.tar.zst

@@ -20,7 +20,7 @@ def begin_build(kernel_ver, hardened_tag):
     try:
         subprocess.run(['bash', str(build_script), kernel_ver, hardened_tag], check=True)
     except subprocess.CalledProcessError as e:
-        logging.error(f"Сборка прервана (вероятно, конфликт патча). Код: {e.returncode}")
+        logging.error(f"Сборка прервана (конфликт патча или поврежденный патч). Код: {e.returncode}")
         sys.exit(e.returncode)
 
 def main():
